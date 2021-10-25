@@ -1,0 +1,11 @@
+body, html {
+    background-color: rgb(50, 50, 50);
+    height: 100%;
+    color: white;
+}
+
+#gameCanvas {
+    border: 5px solid black;
+    float: left;
+}
+  
