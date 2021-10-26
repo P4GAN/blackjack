@@ -14,11 +14,16 @@ var server = app.listen(port, function() {
 const io = require("socket.io")(server);
 
 app.get("/", function (request, response) {
-    response.sendFile(path.join(__dirname, "public/app/index.html")); //when user requests webpage, send it
+    response.sendFile(__dirname + "/public/app/index.html"); //when user requests webpage, send it
 });
 
 
 
 io.on("connection", function(socket) {
     console.log(socket.id)
+
+    socket.on("draw", function(pos) {
+        console.log("test");
+        io.emit('serverDraw', pos)
+    }) 
 })

@@ -7,7 +7,7 @@ for (let i = 0; i < suitList.length; i++) {
     for (let j = 0; j < rankList.length; j++) {
         let cardImage = new Image();
         let cardName = suitList[i] + rankList[j];
-        cardImage.src = "../images/cards/" + cardName + ".png";
+        cardImage.src = "/images/cards/" + cardName + ".png";
         cardImages[cardName] = cardImage;
     } 
 }
