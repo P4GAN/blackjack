@@ -5,14 +5,27 @@
         <script src="/socket.io/socket.io.js"></script>
 
         <script defer src = "/app/main.js"></script>
-        <script src = "/app/blackjack.js"></script>
 
     </head>
 
     <body>
+
         <canvas id = "gameCanvas" height = "600px" width = "800px;">
 
         </canvas>
+        <ul id = "messages"></ul>
+        <form id = "messageForm" onsubmit = "return false;">
+            
+            <input type = "text" id = "message" placeholder = "Message: "/>        
+        <div onclick = "sendMessage()" id = "send">
+            Send
+        </div>
+
+        <button onclick = "makeMove('hit')" id = hit>Hit</button>
+        <button onclick = "makeMove('stand')" id = stand>Stand</button>
+        <button onclick = "makeMove('split')" id = split>Split</button>
+
+
     </body>
 
 

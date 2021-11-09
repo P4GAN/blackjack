@@ -1,17 +1,6 @@
 const suitList = ["clubs", "diamonds", "hearts", "spades"];
 const rankList = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
-const cardImages = {};
-
-for (let i = 0; i < suitList.length; i++) {
-    for (let j = 0; j < rankList.length; j++) {
-        let cardImage = new Image();
-        let cardName = suitList[i] + rankList[j];
-        cardImage.src = "/images/cards/" + cardName + ".png";
-        cardImages[cardName] = cardImage;
-    } 
-}
-
 class Deck {
     constructor() {
         this.deckList = [];
@@ -31,6 +20,20 @@ class Deck {
             this.deckList[randomIndex] = swapA;
         }
     }
+    pickCard() {
+        if (this.deckList.length > 0) {
+            return this.deckList.pop();
+        }
+    }
+    /*pickCards(amount) {
+        let cards = [];
+        if (amount <= this.deckList.length) {
+            for (let i = 0; i < amount; i++) {
+                cards.push(this.deckList.pop());
+            }
+        }
+        return cards;
+    }*/
 
 }
 
@@ -39,9 +42,10 @@ class Card {
         this.suit = suit;
         this.rank = rank;
     }
-    getImage() {
-        let cardName = this.suit + this.rank;
-        return cardImages[cardName];
-    }
+
 }
  
+module.exports = {
+    Deck,
+    Card
+}
