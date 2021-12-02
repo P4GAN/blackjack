@@ -63,6 +63,12 @@ function sendMessage() {
     socket.emit("clientMessage", message);
 }
 
+function sendBet() {
+    let bet = document.getElementById("bet").value
+    console.log(bet);
+    socket.emit("clientBet", bet);
+}
+
 function makeMove(move) {
     console.log(move);
     socket.emit(move);

@@ -17,8 +17,8 @@ const io = require("socket.io")(server);
 
 const path = require("path");
 
-const players = require("./server/players");
-const blackjack = require("./server/blackjack");
+const players = require("./serverModules/players");
+const blackjack = require("./serverModules/blackjack");
 
 
 let serverPlayerList = [];
@@ -29,12 +29,28 @@ let currentPlayerIndex = 0;
 io.on("connection", function(socket) {
     console.log(socket.id);
 
-    let newPlayer = new players.Player("", 100, socket.id);
-    let newHand = new players.Hand();
-    newHand.hit(deck.pickCard());
-    newHand.hit(deck.pickCard());
-    newPlayer.hands.push(newHand);
-    serverPlayerList.push(newPlayer);
+    socket.on('disconnect', function() { //when user disconnects send a message saying they left and remove them from playerList
+        let playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
+
+        io.emit("serverMessage", serverPlayerList[playerIndex].name + " left")
+        serverPlayerList.splice(playerIndex, 1);
+      
+    })
+
+    socket.on("joinGame", function(name) { 
+        if (serverPlayerList.findIndex(player => player.id == socket.id) == -1) {
+            let newPlayer = new players.Player(name, 100, socket.id);
+            let newHand = new players.Hand();
+            newHand.hit(deck.pickCard());
+            newHand.hit(deck.pickCard());
+            newPlayer.hands.push(newHand);
+            serverPlayerList.push(newPlayer);
+            io.emit("serverMessage", name + " joined")
+            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
+        }
+    })
+
+
 
     io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
 
@@ -47,8 +63,17 @@ io.on("connection", function(socket) {
         io.emit("serverMessage", message);
     })
 
+    socket.on("setBet", function(bet) {
+        let player = serverPlayerList.find(player => player.id == socket.id)
+        if (bet <= player.money) {
+            player.bet = bet;
+            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
+        }
+
+    })
+
     socket.on("hit", function() {
-        playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
+        let playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
         if (playerIndex == currentPlayerIndex) {
             let currentPlayer = serverPlayerList[playerIndex];
             currentPlayer.hands[currentPlayer.currentHandIndex].hit(deck.pickCard());
@@ -58,25 +83,25 @@ io.on("connection", function(socket) {
                     currentPlayerIndex += 1;
                 }
             }
-            io.emit("serverUpdate", serverPlayerList);
+            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
         }
     })
 
     socket.on("stand", function() {
-        playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
+        let playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
         if (playerIndex == currentPlayerIndex) {
             let currentPlayer = serverPlayerList[playerIndex];
             currentPlayer.currentHandIndex += 1
             if (currentPlayer.currentHandIndex >= currentPlayer.hands.length) {
                 currentPlayerIndex += 1;
             }
-            io.emit("serverUpdate", serverPlayerList);
+            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
         }
 
     })
 
     socket.on("split", function() {
-        playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
+        let playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
         if (playerIndex == currentPlayerIndex) {
             let currentPlayer = serverPlayerList[playerIndex];
             if (currentPlayer.hands[currentPlayer.currentHandIndex].cards.length == 2) {
@@ -86,9 +111,10 @@ io.on("connection", function(socket) {
                     currentPlayer.hands.push(splitHand);
                 }
             }
-            io.emit("serverUpdate", serverPlayerList);
+            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
         }
 
     })
 
 })
+

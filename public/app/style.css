@@ -27,8 +27,10 @@ body, html {
     padding: 10px; 
     width: 120px; 
     margin-right: 0.5%; 
-  }
-#send { 
+}
+
+
+.formButton { 
     width: 30px; 
     background-color: darkcyan; 
     border: none; 
@@ -37,7 +39,7 @@ body, html {
     display: inline;
 }
     
-#send:hover {
+.formButton:hover {
     background-color: blue;
 }
   
