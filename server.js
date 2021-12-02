@@ -21,36 +21,25 @@ const players = require("./server/players");
 const blackjack = require("./server/blackjack");
 
 
-let serverPlayerList = {};
+let serverPlayerList = [];
 let deck = new blackjack.Deck();
-
-let dealer = new players.Dealer();
-let dealerHand = new players.Hand();
-dealerHand.hit(deck.pickCard());
-dealerHand.hit(deck.pickCard());
-dealer.hands.push(dealerHand);
-serverPlayerList["dealer"] = dealer;
-
-let joinOrder = 1;
 
 let currentPlayerIndex = 0;
 
 io.on("connection", function(socket) {
     console.log(socket.id);
 
-    let newPlayer = new players.Player("", 100, joinOrder);
+    let newPlayer = new players.Player("", 100, socket.id);
     let newHand = new players.Hand();
     newHand.hit(deck.pickCard());
     newHand.hit(deck.pickCard());
     newPlayer.hands.push(newHand);
-    serverPlayerList[socket.id] = newPlayer;
+    serverPlayerList.push(newPlayer);
 
-    joinOrder += 1;
-
-    io.emit("serverUpdate", serverPlayerList);
+    io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
 
     socket.on("gameStart", function() {
-        io.emit("requestMove", )
+        io.emit("requestMove")
     })
 
     socket.on("clientMessage", function(message) {
@@ -59,15 +48,47 @@ io.on("connection", function(socket) {
     })
 
     socket.on("hit", function() {
-        serverPlayerList[socket.id].hands[0].hit(deck.pickCard());
-        io.emit("serverUpdate", serverPlayerList);
+        playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
+        if (playerIndex == currentPlayerIndex) {
+            let currentPlayer = serverPlayerList[playerIndex];
+            currentPlayer.hands[currentPlayer.currentHandIndex].hit(deck.pickCard());
+            if (currentPlayer.hands[currentPlayer.currentHandIndex].bust && currentPlayer.hands[currentPlayer.currentHandIndex].cards.length < 7) {
+                currentPlayer.currentHandIndex += 1
+                if (currentPlayer.currentHandIndex >= currentPlayer.hands.length) {
+                    currentPlayerIndex += 1;
+                }
+            }
+            io.emit("serverUpdate", serverPlayerList);
+        }
+    })
+
+    socket.on("stand", function() {
+        playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
+        if (playerIndex == currentPlayerIndex) {
+            let currentPlayer = serverPlayerList[playerIndex];
+            currentPlayer.currentHandIndex += 1
+            if (currentPlayer.currentHandIndex >= currentPlayer.hands.length) {
+                currentPlayerIndex += 1;
+            }
+            io.emit("serverUpdate", serverPlayerList);
+        }
 
     })
 
+    socket.on("split", function() {
+        playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
+        if (playerIndex == currentPlayerIndex) {
+            let currentPlayer = serverPlayerList[playerIndex];
+            if (currentPlayer.hands[currentPlayer.currentHandIndex].cards.length == 2) {
+                if (currentPlayer.hands[currentPlayer.currentHandIndex][0] == currentPlayer.hands[currentPlayer.currentHandIndex][1]) {
+                    splitHand = new players.Hand();
+                    splitHand.hit(currentPlayer.hands[currentPlayer.currentHandIndex].cards.pop());
+                    currentPlayer.hands.push(splitHand);
+                }
+            }
+            io.emit("serverUpdate", serverPlayerList);
+        }
 
+    })
 
-    socket.on("draw", function(pos) {
-        console.log("test");
-        io.emit('serverDraw', pos);
-    }) 
 })

@@ -10,6 +10,7 @@ class Deck {
                 this.deckList.push(newCard);
             } 
         }
+        this.shuffle();
     }
     shuffle() {
         for (let i = 0; i < this.deckList.length; i++) {
