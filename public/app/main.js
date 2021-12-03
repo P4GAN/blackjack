@@ -180,6 +180,9 @@ function gameUpdate() {
         if (dealer.hands[0].sum > 21) {
             text = "Bust";
         }
+        if (dealer.hands[0].isBlackjack) {
+            text = "BJ";
+        }
         context.fillText(text, drawX, 16 + drawY + (dealer.hands[0].cards.length) * cardSeparationDistance)
     } 
 
