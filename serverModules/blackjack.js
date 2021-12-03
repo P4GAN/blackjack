@@ -46,7 +46,6 @@ class Card {
         this.suit = suit;
         this.rank = rank;
     }
-
 }
  
 module.exports = {

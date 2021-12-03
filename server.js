@@ -63,8 +63,11 @@ function newTurn() {
                 }
             }
             if (serverPlayerList[i].money <= 0) {
-                serverPlayerList.splice(i, 1);
+                if (serverPlayerList[i].bot) {
+                    botCount -= 1;
+                }
                 io.emit("serverMessage", serverPlayerList[i].name + " has been bankrupted and kicked, please rejoin to start with new money");
+                serverPlayerList.splice(i, 1);
 
             }
         }
@@ -91,12 +94,14 @@ io.on("connection", function(socket) {
     socket.on('disconnect', function() { //when user disconnects send a message saying they left and remove them from playerList
         let playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
         if (playerIndex != -1) {
-
+            if (serverPlayerList[i].bot) {
+                botCount -= 1;
+            }
             io.emit("serverMessage", serverPlayerList[playerIndex].name + " left")
             serverPlayerList.splice(playerIndex, 1);
         }
 
-        if (serverPlayerList.length == 0) {
+        if (serverPlayerList.length <= botCount) {
             dealer.hands = [];
             roundStarted = false;
         }
