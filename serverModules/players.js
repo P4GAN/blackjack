@@ -42,17 +42,18 @@ class Hand {
             this.sum += parseInt(newCard.rank);
         }
         if (this.sum > 21) {
+            this.bust = true;
             for (let i = 0; i < this.cards.length; i++) {
                 if (this.cards[i].rank == "A") {
                     this.sum -= 10;
+                    this.bust = false;
                     break;
                 }
             }
-            this.bust = true;
         }
     }
     split() {
-        splitCard = this.currentPlayer.hands[currentPlayer.currentHandIndex].cards.pop();
+        let splitCard = this.cards.pop();
 
         if (splitCard.rank == "A") {
             this.sum -= 11;
@@ -67,7 +68,7 @@ class Hand {
             this.sum -= parseInt(splitCard.rank);
         }
 
-        splitHand = new players.Hand();
+        let splitHand = new Hand();
         splitHand.hit(splitCard);
         return splitHand
         

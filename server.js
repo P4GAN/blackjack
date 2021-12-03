@@ -45,8 +45,8 @@ function newTurn() {
                     if (dealer.hands[0].bust || serverPlayerList[i].hands[j].sum > dealer.hands[0].sum) {
                         serverPlayerList[i].money += 2 * serverPlayerList[i].bet;
                         if (serverPlayerList[i].hands[j].isBlackjack) {
-                            serverPlayerList[i].money += Math.Floor(0.5 * serverPlayerList[i].bet);
-                            io.emit("serverMessage", serverPlayerList[i].name + " has won $" + Math.Floor(1.5 * serverPlayerList[i].bet) + " from a Blackjack");
+                            serverPlayerList[i].money += Math.floor(0.5 * serverPlayerList[i].bet);
+                            io.emit("serverMessage", serverPlayerList[i].name + " has won $" + Math.floor(1.5 * serverPlayerList[i].bet) + " from a Blackjack");
                         }
                         else {
                             io.emit("serverMessage", serverPlayerList[i].name + " has won $" + serverPlayerList[i].bet);
@@ -102,6 +102,8 @@ io.on("connection", function(socket) {
     io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
 
     socket.on("startRound", function() {
+        deck = new blackjack.Deck();
+
         if (roundStarted == false) {
             currentPlayerIndex = 0;
             roundStarted = true;
@@ -186,7 +188,7 @@ io.on("connection", function(socket) {
             if (currentPlayer.hands[currentPlayer.currentHandIndex].cards.length == 2) {
                 if (currentPlayer.hands[currentPlayer.currentHandIndex].cards[0].rank == currentPlayer.hands[currentPlayer.currentHandIndex].cards[1].rank) {
                     if (currentPlayer.bet <= currentPlayer.money) {
-                        currentPlayer.push(currentPlayer.hands[currentPlayer.currentHandIndex].split())
+                        currentPlayer.hands.push(currentPlayer.hands[currentPlayer.currentHandIndex].split())
                         currentPlayer.money -= currentPlayer.bet;
                         io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
                     }

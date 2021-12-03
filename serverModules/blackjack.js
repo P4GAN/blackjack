@@ -4,7 +4,7 @@ const rankList = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "
 class Deck {
     constructor() {
         this.deckList = [];
-        this.deckNumber = 8
+        this.deckNumber = 8;
         for (let n = 0; n < this.deckNumber; n++) {
             for (let i = 0; i < suitList.length; i++) {
                 for (let j = 0; j < rankList.length; j++) {
@@ -13,7 +13,8 @@ class Deck {
                 } 
             }
         }
-        this.shuffle();
+        this.deckList.push(new Card("clubs", "A"), new Card("spades", "A"))
+        //this.shuffle();
     }
     shuffle() {
         for (let i = 0; i < this.deckList.length; i++) {
