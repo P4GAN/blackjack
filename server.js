@@ -19,6 +19,7 @@ const path = require("path");
 
 const players = require("./serverModules/players");
 const blackjack = require("./serverModules/blackjack");
+const { parse } = require("path");
 
 let roundStarted = false;
 
@@ -28,14 +29,17 @@ let deck = new blackjack.Deck();
 let currentPlayerIndex = 0;
 
 let dealer = new players.Dealer();
+let dealerStandValue = 17;
 
+let botCount = 0;
 
 function newTurn() {
     currentPlayerIndex += 1;
+
     if (currentPlayerIndex >= serverPlayerList.length) {
         dealer.hidden = false;
 
-        while (dealer.hands[0].sum < 17) {
+        while (dealer.hands[0].sum < dealerStandValue) {
             dealer.hands[0].hit(deck.pickCard());
         }
 
@@ -58,12 +62,24 @@ function newTurn() {
                     }
                 }
             }
+            if (serverPlayerList[i].money <= 0) {
+                serverPlayerList.splice(playerIndex, 1);
+                io.emit("serverMessage", serverPlayerList[i].name + " has been bankrupted and kicked, please rejoin to start with new money");
+
+            }
         }
 
         io.emit("serverMessage", "Round Finished, click Start Round");
 
         roundStarted = false;
 
+    }
+    else if (serverPlayerList[currentPlayerIndex].bot == true) {
+
+        while (serverPlayerList[currentPlayerIndex].hands[0].sum < serverPlayerList[currentPlayerIndex].standValue) {
+            serverPlayerList[currentPlayerIndex].hands[0].hit(deck.pickCard());
+        }
+        newTurn();
     }
     io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
 
@@ -88,8 +104,27 @@ io.on("connection", function(socket) {
 
     })
 
+    socket.on("changeDealerValue", function(standValue) {
+        if (roundStarted == false && 12 <= parseInt(standValue) <= 21) {
+            dealerStandValue = standValue;
+        }
+        io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
+
+    })
+
+    socket.on("addBot", function(standValue) {
+        if (roundStarted == false && serverPlayerList.length < 7 && 12 <= parseInt(standValue) <= 21) {
+            io.emit("serverMessage", "Bot" + botCount + " Joined");
+            botCount += 1;
+            let newBot = new players.Bot(botCount, standValue);
+            serverPlayerList.push(newBot);
+        }
+        io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
+
+    })
+
     socket.on("joinGame", function(name) { 
-        if (serverPlayerList.findIndex(player => player.id == socket.id) == -1 && roundStarted == false) {
+        if (serverPlayerList.findIndex(player => player.id == socket.id) == -1 && roundStarted == false && serverPlayerList.length < 7) {
             let newPlayer = new players.Player(name, 100, socket.id);
             serverPlayerList.push(newPlayer);
             io.emit("serverMessage", name + " joined")

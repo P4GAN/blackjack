@@ -13,12 +13,53 @@
         <canvas id = "gameCanvas" height = "600px" width = "1000px;">
 
         </canvas>
+        <div id = "sidebar"></div>
         <form id = "nameForm" class = "form" onsubmit = "return false;">
             <input type = "text" id = "name" placeholder = "Enter Name:"/>
             <div onclick = "joinGame()" id = "joinGame" class = "button">
                 Join
             </div>
         </form>
+        <br>
+        <div>
+            Dealer will stand at: 
+            <form style = "display: inline-block">
+                <select id = "dealerValue">
+                    <option value = "12">12</option>
+                    <option value = "13">13</option>
+                    <option value = "14">14</option>
+                    <option value = "15">15</option>
+                    <option value = "16">16</option>
+                    <option value = "17" selected>17</option>
+                    <option value = "18">18</option>
+                    <option value = "19">19</option>
+                    <option value = "20">20</option>
+                    <option value = "21">21</option>
+                 </select>
+            </form>
+            <span onclick="changeDealerValue()" class = "button">Submit</span>
+        </div>
+        <br>
+        <br>
+        <div>
+            Add bot that will stand at
+            <form style = "display: inline-block">
+                <select id = "botValue">
+                    <option value = "12">12</option>
+                    <option value = "13">13</option>
+                    <option value = "14">14</option>
+                    <option value = "15">15</option>
+                    <option value = "16">16</option>
+                    <option value = "17" selected>17</option>
+                    <option value = "18">18</option>
+                    <option value = "19">19</option>
+                    <option value = "20">20</option>
+                    <option value = "21">21</option>
+                 </select>
+            </form>
+            <span onclick="addBot()" class = "button">Add</span>
+        </div>
+        <br>
 
         <div>
             Player Balances:
@@ -32,7 +73,6 @@
 
        <br>
        <br>
-       <br>
 
         <div>
             <button onclick = "makeMove('hit')" id = "hit" class = "button">Hit</button>
@@ -40,6 +80,7 @@
             <button onclick = "makeMove('split')" id = "split" class = "button">Split</button>
             <button onclick = "makeMove('double')" id = "double" class = "button">Double</button>
         </div>
+        <br>
 
         <form id = "betForm" class = "form" onsubmit = "return false;">
             
@@ -48,6 +89,7 @@
                 Confirm
             </div>
         </form>
+        <br>
         <div id = "messageBox">
             <ul id = "messages"></ul>
             <form id = "messageForm" class = "form" onsubmit = "return false;">

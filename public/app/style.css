@@ -16,7 +16,7 @@ body, html {
 
 #messages {
     overflow: scroll;
-    height: 150px;
+    height: 125px;
     list-style-type: none; 
     margin: 0; 
     padding: 0;
@@ -28,7 +28,7 @@ body, html {
 
 #playerBalances {
     overflow: scroll;
-    height: 150px;
+    height: 125px;
     border: 1px solid black;
     list-style-type: none; 
     margin: 0; 

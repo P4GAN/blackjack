@@ -17,6 +17,14 @@ class Dealer extends Player {
     }
 }
 
+class Bot extends Player {
+    constructor(botCount, standValue) {
+        super("Bot" + botCount, 100, "Dealer" + botCount);
+        this.bot = true;
+        this.standValue = standValue;
+    }
+}
+
 class Hand {
     constructor() {
         this.cards = [];
@@ -26,47 +34,47 @@ class Hand {
     }
     hit(newCard) {
         this.cards.push(newCard);
+        this.sum = this.findSum();
         if (newCard.rank == "A") {
-            this.sum += 11;
             if (this.cards.length == 2 && this.sum == 21) {
                 this.isBlackjack = true;
             }
         }
         else if (newCard.rank == "10" || newCard.rank == "J" || newCard.rank == "Q" || newCard.rank == "K") {
-            this.sum += 10;
             if (this.cards.length == 2 && this.sum == 21) {
                 this.isBlackjack = true 
             }
         }
-        else {
-            this.sum += parseInt(newCard.rank);
-        }
-        if (this.sum > 21) {
-            this.bust = true;
-            for (let i = 0; i < this.cards.length; i++) {
-                if (this.cards[i].rank == "A") {
-                    this.sum -= 10;
-                    this.bust = false;
-                    break;
-                }
+    }
+    findSum() {
+        let newSum = 0;
+        let aceCount = 0;
+        for (let i = 0; i < this.cards.length; i++) {
+            if (this.cards[i].rank == "A") {
+                newSum += 11;
+                aceCount += 1
+            }
+            else if (this.cards[i].rank == "10" ||this.cards[i].rank == "J" || this.cards[i].rank == "Q" || this.cards[i].rank == "K") {
+                newSum += 10;
+            }
+            else {
+                newSum += parseInt(this.cards[i].rank);
             }
         }
+        if (newSum > 21) {
+            for (let j = 0; j < aceCount; j++) {
+                newSum -= 10;
+                if (newSum <= 21) {
+                    break;
+                }
+
+            }
+        }
+        return newSum;
     }
     split() {
         let splitCard = this.cards.pop();
-
-        if (splitCard.rank == "A") {
-            this.sum -= 11;
-            if (this.sum <= 11) {
-                this.sum += 10;
-            }
-        }
-        else if (newCard.rank == "10" || newCard.rank == "J" || newCard.rank == "Q" || newCard.rank == "K") {
-            this.sum -= 10;
-        }
-        else {
-            this.sum -= parseInt(splitCard.rank);
-        }
+        this.sum = this.findSum();
 
         let splitHand = new Hand();
         splitHand.hit(splitCard);
@@ -78,5 +86,6 @@ class Hand {
 module.exports = {
     Player,
     Dealer,
+    Bot,
     Hand
 }

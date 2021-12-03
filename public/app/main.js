@@ -78,6 +78,16 @@ function sendMessage() {
     }
 }
 
+function changeDealerValue() {
+    let dealerValue = document.getElementById("dealerValue").value
+    socket.emit("changeDealerValue", dealerValue);
+}
+
+function addBot() {
+    let botValue = document.getElementById("botValue").value
+    socket.emit("addBot", botValue);
+}
+
 function setBet() {
     let bet = document.getElementById("bet").value
     console.log(bet);
