@@ -26,13 +26,14 @@ let serverPlayerList = [];
 let deck = new blackjack.Deck();
 
 let currentPlayerIndex = 0;
-let x = 0;
 
 let dealer = new players.Dealer();
+
 
 function newTurn() {
     currentPlayerIndex += 1;
     if (currentPlayerIndex >= serverPlayerList.length) {
+        dealer.hidden = false;
 
         while (dealer.hands[0].sum < 17) {
             dealer.hands[0].hit(deck.pickCard());
@@ -45,21 +46,21 @@ function newTurn() {
                         serverPlayerList[i].money += 2 * serverPlayerList[i].bet;
                         if (serverPlayerList[i].hands[j].isBlackjack) {
                             serverPlayerList[i].money += Math.Floor(0.5 * serverPlayerList[i].bet);
-                            io.emit("serverMessage", serverPlayerList[i].name + "has won $" + Math.Floor(1.5 * serverPlayerList[i].bet) + " from a Blackjack");
+                            io.emit("serverMessage", serverPlayerList[i].name + " has won $" + Math.Floor(1.5 * serverPlayerList[i].bet) + " from a Blackjack");
                         }
                         else {
-                            io.emit("serverMessage", serverPlayerList[i].name + "has won $" + serverPlayerList[i].bet);
+                            io.emit("serverMessage", serverPlayerList[i].name + " has won $" + serverPlayerList[i].bet);
                         }
                     }
                     if (serverPlayerList[i].hands[j].sum == dealer.hands[0].sum) {
                         serverPlayerList[i].money += serverPlayerList[i].bet;
                         io.emit("serverMessage", serverPlayerList[i].name + "has tied and won nothing");
-
                     }
                 }
-
             }
         }
+
+        io.emit("serverMessage", "Round Finished, click Start Round");
 
         roundStarted = false;
 
@@ -80,9 +81,11 @@ io.on("connection", function(socket) {
         }
 
         if (serverPlayerList.length == 0) {
+            dealer.hands = [];
             roundStarted = false;
         }
-      
+        io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
+
     })
 
     socket.on("joinGame", function(name) { 
@@ -114,6 +117,7 @@ io.on("connection", function(socket) {
                 serverPlayerList[i].money -= serverPlayerList[i].bet;
 
             }
+            dealer.hidden = true;
             let dealerHand = new players.Hand();
             dealerHand.hit(deck.pickCard());
             dealerHand.hit(deck.pickCard());
@@ -146,7 +150,6 @@ io.on("connection", function(socket) {
 
     socket.on("hit", function() {
         let playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
-        console.log(playerIndex, currentPlayerIndex);
         if (playerIndex == currentPlayerIndex && roundStarted) {
             let currentPlayer = serverPlayerList[playerIndex];
             let currentHand = currentPlayer.hands[currentPlayer.currentHandIndex];
@@ -182,15 +185,33 @@ io.on("connection", function(socket) {
             let currentPlayer = serverPlayerList[playerIndex];
             if (currentPlayer.hands[currentPlayer.currentHandIndex].cards.length == 2) {
                 if (currentPlayer.hands[currentPlayer.currentHandIndex].cards[0].rank == currentPlayer.hands[currentPlayer.currentHandIndex].cards[1].rank) {
-                    if (serverPlayerList[i].bet <= serverPlayerList[i].money) {
+                    if (currentPlayer.bet <= currentPlayer.money) {
                         currentPlayer.push(currentPlayer.hands[currentPlayer.currentHandIndex].split())
-                        serverPlayerList[i].money -= serverPlayerList[i].bet;
+                        currentPlayer.money -= currentPlayer.bet;
                         io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
                     }
                 }
             }
         }
 
+    })
+
+    socket.on("double", function() {
+        let playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
+        if (playerIndex == currentPlayerIndex && roundStarted) {
+            let currentPlayer = serverPlayerList[playerIndex];
+            let currentHand = currentPlayer.hands[currentPlayer.currentHandIndex];
+            if (currentHand.cards.length < 7 && currentPlayer.bet <= currentPlayer.money) {
+                currentPlayer.money -= currentPlayer.bet;
+                currentPlayer.bet *= 2;
+                currentHand.hit(deck.pickCard());
+                currentPlayer.currentHandIndex += 1
+                if (currentPlayer.currentHandIndex >= currentPlayer.hands.length) {
+                    newTurn();
+                }
+                io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
+            }
+        }
     })
 
 })

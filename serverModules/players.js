@@ -13,7 +13,7 @@ class Player {
 class Dealer extends Player {
     constructor() {
         super("Dealer", Number.MAX_VALUE, "Dealer");
-        this.dealer = true;
+        this.hidden = true;
     }
 }
 
@@ -29,22 +29,25 @@ class Hand {
         if (newCard.rank == "A") {
             this.sum += 11;
             if (this.cards.length == 2 && this.sum == 21) {
-                this.isBlackJack = true;
-            }
-            if (this.sum > 21) {
-                this.sum -= 10;
+                this.isBlackjack = true;
             }
         }
-        else if (newCard.rank == "J" || newCard.rank == "Q" || newCard.rank == "K") {
+        else if (newCard.rank == "10" || newCard.rank == "J" || newCard.rank == "Q" || newCard.rank == "K") {
             this.sum += 10;
             if (this.cards.length == 2 && this.sum == 21) {
-                this.isBlackJack = true 
+                this.isBlackjack = true 
             }
         }
         else {
             this.sum += parseInt(newCard.rank);
         }
         if (this.sum > 21) {
+            for (let i = 0; i < this.cards.length; i++) {
+                if (this.cards[i].rank == "A") {
+                    this.sum -= 10;
+                    break;
+                }
+            }
             this.bust = true;
         }
     }
@@ -57,7 +60,7 @@ class Hand {
                 this.sum += 10;
             }
         }
-        else if (splitCard.rank == "J" || splitCard.rank == "Q" || splitCard.rank == "K") {
+        else if (newCard.rank == "10" || newCard.rank == "J" || newCard.rank == "Q" || newCard.rank == "K") {
             this.sum -= 10;
         }
         else {

@@ -78,10 +78,10 @@ function sendMessage() {
     }
 }
 
-function sendBet() {
+function setBet() {
     let bet = document.getElementById("bet").value
     console.log(bet);
-    socket.emit("clientBet", bet);
+    socket.emit("setBet", bet);
 }
 
 function makeMove(move) {
@@ -168,9 +168,27 @@ function gameUpdate() {
     context.fillText("Dealer", 5 + dealerColumn * gameCanvas.width / playerWidth, 20 + dealerRow * gameCanvas.height / playerHeight);
 
     if (dealer.hands[0]) {
-        for (let i = 0; i < dealer.hands[0].cards.length; i++) {
-            let cardY = drawY + (i * cardSeparationDistance);
-            drawCard(dealer.hands[0].cards[i], drawX, cardY, dealer.hands[0].bust);
+        if (dealer.hidden) {
+            drawCard(dealer.hands[0].cards[0], drawX, drawY, dealer.hands[0].bust);
+            context.beginPath();
+            context.strokeStyle = "DimGrey";
+            context.shadowBlur = 50;
+            context.shadowColor = "DimGrey";
+            context.lineWidth = 3;
+            context.fillStyle = "DimGrey";
+            context.font = "24px Courier New";
+            context.rect(drawX, drawY + cardSeparationDistance, cardWidth, cardHeight)
+            context.stroke();
+            context.fillText("?", drawX + 16, drawY + cardSeparationDistance + 18);
+            context.shadowColor = 0; 
+            context.shadowBlur = 0;   
+
+        }
+        else {
+            for (let i = 0; i < dealer.hands[0].cards.length; i++) {
+                let cardY = drawY + (i * cardSeparationDistance);
+                drawCard(dealer.hands[0].cards[i], drawX, cardY, dealer.hands[0].bust);
+            }
         }
 
         context.fillStyle = "white";
@@ -182,6 +200,9 @@ function gameUpdate() {
         }
         if (dealer.hands[0].isBlackjack) {
             text = "BJ";
+        }
+        if (dealer.hidden) {
+            text = "?";
         }
         context.fillText(text, drawX, 16 + drawY + (dealer.hands[0].cards.length) * cardSeparationDistance)
     } 
