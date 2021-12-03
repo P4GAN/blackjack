@@ -131,6 +131,9 @@ function drawPlayer(row, column, player) {
         if (player.hands[i].sum > 21) {
             text = "Bust";
         }
+        if (player.hands[i].isBlackjack) {
+            text = "BJ";
+        }
         context.fillText(text, drawX + (i * handSeparationWidth), 16 + drawY + (player.hands[i].cards.length) * cardSeparationDistance)
     }
 

@@ -22,7 +22,7 @@ class Hand {
         this.cards = [];
         this.sum = 0;
         this.bust = false;
-        this.isBlackJack = false;
+        this.isBlackjack = false;
     }
     hit(newCard) {
         this.cards.push(newCard);
@@ -51,17 +51,17 @@ class Hand {
     split() {
         splitCard = this.currentPlayer.hands[currentPlayer.currentHandIndex].cards.pop();
 
-        if (newCard.rank == "A") {
+        if (splitCard.rank == "A") {
             this.sum -= 11;
             if (this.sum <= 11) {
                 this.sum += 10;
             }
         }
-        else if (newCard.rank == "J" || newCard.rank == "Q" || newCard.rank == "K") {
+        else if (splitCard.rank == "J" || splitCard.rank == "Q" || splitCard.rank == "K") {
             this.sum -= 10;
         }
         else {
-            this.sum -= parseInt(newCard.rank);
+            this.sum -= parseInt(splitCard.rank);
         }
 
         splitHand = new players.Hand();
