@@ -9,10 +9,14 @@ body, html {
     float: left;
 }
 
+#messageBox {
+    border: 1px solid black;
+    float: bottom;
+}
+
 #messages {
     overflow: scroll;
     height: 150px;
-    border: 1px solid black;
     list-style-type: none; 
     margin: 0; 
     padding: 0;
@@ -22,7 +26,20 @@ body, html {
     padding: 5px 10px; 
 }
 
-#messageForm input { 
+#playerBalances {
+    overflow: scroll;
+    height: 150px;
+    border: 1px solid black;
+    list-style-type: none; 
+    margin: 0; 
+    padding: 0;
+  }
+  
+#playerBalances li { 
+    padding: 5px 10px; 
+}
+
+.form input { 
     border: 0; 
     padding: 10px; 
     width: 120px; 
@@ -30,7 +47,7 @@ body, html {
 }
 
 
-.formButton { 
+.button { 
     width: 30px; 
     background-color: darkcyan; 
     border: none; 
@@ -39,7 +56,7 @@ body, html {
     display: inline;
 }
     
-.formButton:hover {
+.button:hover {
     background-color: blue;
 }
   

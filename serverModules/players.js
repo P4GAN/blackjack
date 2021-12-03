@@ -12,7 +12,7 @@ class Player {
 
 class Dealer extends Player {
     constructor() {
-        super("DEALER", Number.MAX_VALUE, 0);
+        super("Dealer", Number.MAX_VALUE, "Dealer");
         this.dealer = true;
     }
 }
@@ -47,6 +47,27 @@ class Hand {
         if (this.sum > 21) {
             this.bust = true;
         }
+    }
+    split() {
+        splitCard = this.currentPlayer.hands[currentPlayer.currentHandIndex].cards.pop();
+
+        if (newCard.rank == "A") {
+            this.sum -= 11;
+            if (this.sum <= 11) {
+                this.sum += 10;
+            }
+        }
+        else if (newCard.rank == "J" || newCard.rank == "Q" || newCard.rank == "K") {
+            this.sum -= 10;
+        }
+        else {
+            this.sum -= parseInt(newCard.rank);
+        }
+
+        splitHand = new players.Hand();
+        splitHand.hit(splitCard);
+        return splitHand
+        
     }
 }
 

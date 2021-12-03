@@ -6,6 +6,7 @@ const gameCanvas = document.getElementById("gameCanvas");
 const context = gameCanvas.getContext("2d");
 
 const messages = document.getElementById("messages");
+const playerBalances = document.getElementById("playerBalances");
 
 let frameInterval = 20;
 
@@ -36,6 +37,7 @@ const horizontalOffset = 4;
 const handSeparationWidth = 65;
 const cardSeparationDistance = 28;
 
+let dealer = undefined;
 
 function drawCard(card, x, y, bust) {
     context.beginPath();
@@ -57,10 +59,23 @@ function drawCard(card, x, y, bust) {
     context.shadowBlur = 0;     
 }
 
+function joinGame() {
+    let name = document.getElementById("name").value;
+    if (name != "") {
+        socket.emit("joinGame", name);
+    }
+}
+
+function startRound() {
+    socket.emit("startRound");
+}
+
 function sendMessage() {
     let message = document.getElementById("message").value
-    console.log(message);
-    socket.emit("clientMessage", message);
+    if (message != "") {
+        console.log(message);
+        socket.emit("clientMessage", message);
+    }
 }
 
 function sendBet() {
@@ -80,15 +95,23 @@ socket.on("serverMessage", function(message) {
     messages.appendChild(messageElement);
 });
 
-socket.on("serverUpdate", function(serverPlayerList, currentPlayerIndex) {
+socket.on("serverUpdate", function(serverPlayerList, currentPlayerIndex, serverDealer) {
     playerList = serverPlayerList;
     playerIndex = currentPlayerIndex;
+    dealer = serverDealer;
+
+    playerBalances.innerHTML = "";
+    for (let i = 0; i < serverPlayerList.length; i++) {
+        playerBalanceElement = document.createElement("li");
+        playerBalanceElement.innerHTML = serverPlayerList[i].name + ": $" + serverPlayerList[i].money;
+        playerBalances.appendChild(playerBalanceElement)
+    }
 });
 
 function drawPlayer(row, column, player) {
     context.fillStyle = "white";
     context.font = "20px Courier New";
-    context.fillText("dsajknsk", 5 + column * gameCanvas.width / playerWidth, 20 + row * gameCanvas.height / playerHeight);
+    context.fillText(player.name, 5 + column * gameCanvas.width / playerWidth, 20 + row * gameCanvas.height / playerHeight);
     context.fillText("Cash: $" + player.money, 5 + column * gameCanvas.width / playerWidth, 40 + row * gameCanvas.height / playerHeight);
     context.fillText("Bet: $" + player.bet, 5 + column * gameCanvas.width / playerWidth, 60 + row * gameCanvas.height / playerHeight);
 
@@ -131,15 +154,46 @@ function gameUpdate() {
 
     }
 
-    let row = Math.floor(playerIndex / playerWidth);
-    let column = playerIndex % playerWidth;
+    let dealerRow = Math.floor(playerList.length / playerWidth);
+    let dealerColumn = playerList.length % playerWidth;
+
+    let drawX = horizontalOffset + dealerColumn * gameCanvas.width / playerWidth;
+    let drawY = 30 + dealerRow * gameCanvas.height / playerHeight;
+
+    context.fillStyle = "green";
+    context.font = "20px Courier New";
+    context.fillText("Dealer", 5 + dealerColumn * gameCanvas.width / playerWidth, 20 + dealerRow * gameCanvas.height / playerHeight);
+
+    if (dealer.hands[0]) {
+        for (let i = 0; i < dealer.hands[0].cards.length; i++) {
+            let cardY = drawY + (i * cardSeparationDistance);
+            drawCard(dealer.hands[0].cards[i], drawX, cardY, dealer.hands[0].bust);
+        }
+
+        context.fillStyle = "white";
+        context.font = "20px Courier New";
+
+        let text = dealer.hands[0].sum;
+        if (dealer.hands[0].sum > 21) {
+            text = "Bust";
+        }
+        context.fillText(text, drawX, 16 + drawY + (dealer.hands[0].cards.length) * cardSeparationDistance)
+    } 
+
+    let currentRow = Math.floor(playerIndex / playerWidth);
+    let currentColumn = playerIndex % playerWidth;
+
+
+    context.lineWidth = 4;
+    context.strokeStyle = "green";
+    context.beginPath();
+    context.rect(dealerColumn * gameCanvas.width/playerWidth, 2 + dealerRow * gameCanvas.height/playerHeight, gameCanvas.width/playerWidth, gameCanvas.height/playerHeight)
+    context.stroke();
 
     context.strokeStyle = "yellow";
     context.beginPath();
-    context.lineWidth = 4;
-    context.rect(column * gameCanvas.width/playerWidth, 2 + row * gameCanvas.height/playerHeight, gameCanvas.width/playerWidth, gameCanvas.height/playerHeight)
+    context.rect(currentColumn * gameCanvas.width/playerWidth, 2 + currentRow * gameCanvas.height/playerHeight, gameCanvas.width/playerWidth, gameCanvas.height/playerHeight)
     context.stroke();
-
 
     //let card = deck.deckList[0];
     //context.drawImage(card.getImage(), 0, 0, cardWidth, cardHeight);

@@ -20,54 +20,85 @@ const path = require("path");
 const players = require("./serverModules/players");
 const blackjack = require("./serverModules/blackjack");
 
+let roundStarted = false;
 
 let serverPlayerList = [];
 let deck = new blackjack.Deck();
 
 let currentPlayerIndex = 0;
 
+let dealer = new players.Dealer();
+
+function newCards(player) {
+    for (let i = 0; i < serverPlayerList.length; i++) {
+        let newHand = new players.Hand();
+        newHand.hit(deck.pickCard());
+        newHand.hit(deck.pickCard());
+        serverPlayerList[i].hands = [newHand];
+        serverPlayerList[i].currentHandIndex = 0;
+    }
+    
+}
+
+function newTurn() {
+    currentPlayerIndex += 1;
+    if (currentPlayerIndex >= serverPlayerList.length) {
+        while (dealer.hands[0].sum < 17) {
+            dealer.hands[0].hit();
+        }
+    }
+}
+
 io.on("connection", function(socket) {
     console.log(socket.id);
 
     socket.on('disconnect', function() { //when user disconnects send a message saying they left and remove them from playerList
         let playerIndex = serverPlayerList.findIndex(player => player.id == socket.id)
+        if (playerIndex != -1) {
 
-        io.emit("serverMessage", serverPlayerList[playerIndex].name + " left")
-        serverPlayerList.splice(playerIndex, 1);
+            io.emit("serverMessage", serverPlayerList[playerIndex].name + " left")
+            serverPlayerList.splice(playerIndex, 1);
+        }
       
     })
 
     socket.on("joinGame", function(name) { 
         if (serverPlayerList.findIndex(player => player.id == socket.id) == -1) {
             let newPlayer = new players.Player(name, 100, socket.id);
-            let newHand = new players.Hand();
-            newHand.hit(deck.pickCard());
-            newHand.hit(deck.pickCard());
-            newPlayer.hands.push(newHand);
             serverPlayerList.push(newPlayer);
             io.emit("serverMessage", name + " joined")
-            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
+            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
         }
     })
 
 
 
-    io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
+    io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
 
-    socket.on("gameStart", function() {
-        io.emit("requestMove")
+    socket.on("startRound", function() {
+        let currentPlayerIndex = 0;
+        roundStarted = true;
+        newCards();
+        let dealerHand = new players.Hand();
+        dealerHand.hit(deck.pickCard());
+        dealerHand.hit(deck.pickCard());
+        dealer.hands = [dealerHand];
+        io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
+
     })
 
     socket.on("clientMessage", function(message) {
         console.log(message);
-        io.emit("serverMessage", message);
+        let player = serverPlayerList.find(player => player.id == socket.id);
+        let newMessage = player.name + ": " + message;
+        io.emit("serverMessage", newMessage);
     })
 
     socket.on("setBet", function(bet) {
         let player = serverPlayerList.find(player => player.id == socket.id)
         if (bet <= player.money) {
             player.bet = bet;
-            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
+            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
         }
 
     })
@@ -80,10 +111,10 @@ io.on("connection", function(socket) {
             if (currentPlayer.hands[currentPlayer.currentHandIndex].bust && currentPlayer.hands[currentPlayer.currentHandIndex].cards.length < 7) {
                 currentPlayer.currentHandIndex += 1
                 if (currentPlayer.currentHandIndex >= currentPlayer.hands.length) {
-                    currentPlayerIndex += 1;
+                    newTurn();
                 }
             }
-            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
+            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
         }
     })
 
@@ -93,9 +124,9 @@ io.on("connection", function(socket) {
             let currentPlayer = serverPlayerList[playerIndex];
             currentPlayer.currentHandIndex += 1
             if (currentPlayer.currentHandIndex >= currentPlayer.hands.length) {
-                currentPlayerIndex += 1;
+                newTurn();
             }
-            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
+            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
         }
 
     })
@@ -105,13 +136,11 @@ io.on("connection", function(socket) {
         if (playerIndex == currentPlayerIndex) {
             let currentPlayer = serverPlayerList[playerIndex];
             if (currentPlayer.hands[currentPlayer.currentHandIndex].cards.length == 2) {
-                if (currentPlayer.hands[currentPlayer.currentHandIndex][0] == currentPlayer.hands[currentPlayer.currentHandIndex][1]) {
-                    splitHand = new players.Hand();
-                    splitHand.hit(currentPlayer.hands[currentPlayer.currentHandIndex].cards.pop());
-                    currentPlayer.hands.push(splitHand);
+                if (currentPlayer.hands[currentPlayer.currentHandIndex].cards[0] == currentPlayer.hands[currentPlayer.currentHandIndex].cards[1]) {
+                    currentPlayer.push(currentPlayer.hands[currentPlayer.currentHandIndex].split())
                 }
             }
-            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex);
+            io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
         }
 
     })
