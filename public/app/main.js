@@ -78,6 +78,13 @@ function sendMessage() {
     }
 }
 
+document.addEventListener("keypress", function(event) {
+    if (event.keyCode == 13) {
+        event.preventDefault();
+        sendMessage();
+    }
+});
+
 function changeDealerValue() {
     let dealerValue = document.getElementById("dealerValue").value
     socket.emit("changeDealerValue", dealerValue);
@@ -103,6 +110,7 @@ socket.on("serverMessage", function(message) {
     let messageElement = document.createElement("li");
     messageElement.innerHTML = message;
     messages.appendChild(messageElement);
+    messages.scrollTop = messages.scrollHeight;
 });
 
 socket.on("serverUpdate", function(serverPlayerList, currentPlayerIndex, serverDealer) {

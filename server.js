@@ -63,7 +63,7 @@ function newTurn() {
                 }
             }
             if (serverPlayerList[i].money <= 0) {
-                serverPlayerList.splice(playerIndex, 1);
+                serverPlayerList.splice(i, 1);
                 io.emit("serverMessage", serverPlayerList[i].name + " has been bankrupted and kicked, please rejoin to start with new money");
 
             }
@@ -140,7 +140,7 @@ io.on("connection", function(socket) {
         deck = new blackjack.Deck();
 
         if (roundStarted == false) {
-            currentPlayerIndex = 0;
+            currentPlayerIndex = -1;
             roundStarted = true;
             for (let i = 0; i < serverPlayerList.length; i++) {
                 let newHand = new players.Hand();
@@ -159,6 +159,8 @@ io.on("connection", function(socket) {
             dealerHand.hit(deck.pickCard());
             dealerHand.hit(deck.pickCard());
             dealer.hands = [dealerHand];
+
+            newTurn();
             io.emit("serverUpdate", serverPlayerList, currentPlayerIndex, dealer);
         }
     })
