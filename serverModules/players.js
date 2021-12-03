@@ -70,6 +70,9 @@ class Hand {
 
             }
         }
+        if (newSum > 21) {
+            this.bust = true;
+        }
         return newSum;
     }
     split() {

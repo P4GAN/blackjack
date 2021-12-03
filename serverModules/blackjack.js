@@ -13,8 +13,7 @@ class Deck {
                 } 
             }
         }
-        this.deckList.push(new Card("clubs", "A"), new Card("spades", "A"))
-        //this.shuffle();
+        this.shuffle();
     }
     shuffle() {
         for (let i = 0; i < this.deckList.length; i++) {

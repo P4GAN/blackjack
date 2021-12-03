@@ -58,7 +58,7 @@ function newTurn() {
                     }
                     if (serverPlayerList[i].hands[j].sum == dealer.hands[0].sum) {
                         serverPlayerList[i].money += serverPlayerList[i].bet;
-                        io.emit("serverMessage", serverPlayerList[i].name + "has tied and won nothing");
+                        io.emit("serverMessage", serverPlayerList[i].name + " has tied and won nothing");
                     }
                 }
             }
